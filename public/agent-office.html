@@ -1,0 +1,39 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>kopbri · Ajan Ofisi</title><link rel="stylesheet" href="agent-office.css"><link rel="stylesheet" href="/kopbri-theme.css"><link rel="stylesheet" href="/voice-room.css"><script defer src="/office-language.js"></script></head><body data-view="office">
+
+<main><header><span>Çalışma alanı <em>/</em> <b id="crumb">Ajan Ofisi</b></span><button class="primary" id="new">＋ Yeni görev</button></header><div class="content"><div class="intro"><h1 id="heading">Ajan Ofisi</h1><p id="subtitle">Ekibinin masasına göz at, görevleri ve konuşmaları takip et.</p></div>
+<section id="office" class="view"><div class="layout"><div class="stage"><div class="stagebar"><span><i></i> &nbsp; OFİS KATI</span><span>KUŞBAKIŞI</span></div><svg id="room" viewBox="50 47 690 435" aria-label="İzometrik ajan ofisi"></svg><div class="stagefoot">⌖ &nbsp; Bir masaya tıklayarak ajanı incele</div></div><div class="panel"><small id="teamCount">EKİP / 03</small><h2>Ajanlar</h2><button class="secondary" id="newAgent">＋ Ajan ekle</button><div id="agents"></div><div id="detail"></div></div></div></section>
+<section id="tasks" class="view panel" hidden><h2>Görev listesi</h2><div id="taskList"></div></section><section id="chat" class="view panel" hidden><h2>Ekip kanalı</h2><div id="messages" aria-live="polite"></div></section></div></main>
+<dialog id="dialog"><form id="form"><div class="dialoghead"><h2>Yeni görev</h2><button id="close" type="button" aria-label="Kapat">×</button></div><label>Görev adı<input name="title" required maxlength="100" placeholder="Örn. Açılış sayfasını incele"></label><label>Sorumlu ajan<select name="agent"></select></label><label>Rol veya talimat<textarea name="role" maxlength="500" placeholder="Örn. Sen ürün tasarımcısısın. Önerilerini üç maddede yaz."></textarea></label><label class="check"><input type="checkbox" name="team"> İki ekip arkadaşından geri bildirim al</label><label class="check"><input type="checkbox" name="folder"> Çalışma klasöründe dosya değişikliği yapabilir</label><p id="taskFormStatus" role="status"></p><button class="primary">Görevi ata</button></form></dialog><dialog id="agentDialog"><form id="agentForm"><h2 id="agentFormTitle">Yeni ajan</h2><label>Ajan adı<input name="name" required maxlength="32"></label><label>Model<select name="model"><option value="0">ChatGPT (Codex)</option><option value="1">Claude</option><option value="2">Gemini</option></select></label><label>Meslek<input name="profession" list="agentProfessions" required maxlength="80" placeholder="Örn. Yazılım mühendisi"><datalist id="agentProfessions"><option value="Yazılım mühendisi"><option value="Veri analisti"><option value="Araştırma analisti"><option value="Ürün tasarımcısı"><option value="Kalite mühendisi"></datalist></label><label>Ses profili<select name="voice"><option value="feminine">Kadın tınısı</option><option value="masculine">Erkek tınısı</option></select></label><label>Uzmanlık veya rol<input name="role" maxlength="100" placeholder="İsteğe bağlı görev rolü"></label><div class="actions"><button class="secondary" id="cancelAgent" type="button">Vazgeç</button><button class="primary" id="agentFormSubmit">Ajan ekle</button></div></form></dialog>
+<dialog id="removeAgentDialog"><form method="dialog"><h2>Ajanı sil</h2><p id="removeAgentName"></p><div class="actions"><button class="secondary" value="cancel">Vazgeç</button><button class="primary" value="remove">Sil</button></div></form></dialog>
+<dialog id="voiceDialog" aria-labelledby="voiceRoomTitle">
+  <form id="voiceForm">
+    <div class="voice-room-header">
+      <div class="voice-brand"><img src="/kopbri-mark.svg" alt=""><div><span>KOPBRİ SES</span><h2 id="voiceRoomTitle">Canlı görüşme</h2></div></div>
+      <button class="voice-room-close" type="button" id="voiceClose" aria-label="Görüşmeyi kapat">×</button>
+    </div>
+    <div class="voice-contact">
+      <div id="voiceAvatar" aria-hidden="true"></div>
+      <div class="voice-contact-name"><strong id="voiceAgentName"></strong><small id="voiceAgentModel"></small></div>
+      <span id="voiceProfile"></span>
+      <select name="agent" aria-label="Konuşulacak ajan"></select>
+      <button type="button" id="voiceAddAgent" class="secondary" hidden>＋ Ajan ekle</button>
+    </div>
+    <div class="voice-timeline" id="voiceTimeline" aria-label="Görüşme geçmişi">
+      <div id="voiceThread"></div>
+      <section id="voiceReplyCard" hidden><strong id="voiceReplyName"></strong><p id="voiceReply" aria-live="polite"></p></section>
+    </div>
+    <div class="voice-composer">
+      <div class="voice-indicators"><span id="voiceKeyState">Hazır</span><span id="voiceMicState">Mikrofon kapalı</span><meter id="voiceMeter" min="0" max="100" value="0" aria-label="Mikrofon seviyesi"></meter></div>
+      <p id="voiceStatus" aria-live="polite"></p>
+      <div id="voiceActivity" role="status" aria-label="Ajanın işlemleri" hidden></div>
+      <div class="voice-compose-box">
+        <label class="voice-user"><strong>Sen</strong><textarea name="prompt" placeholder="Konuş veya mesajını yaz…" required maxlength="4000"></textarea></label>
+        <div class="voice-compose-buttons"><button id="voiceMic" class="secondary" type="button" title="Mikrofonu aç veya kaydı bitir">◉ Mikrofon</button><button class="primary" type="submit" title="Mesajı gönder">Gönder ↗</button></div>
+      </div>
+      <div class="voice-compose-foot"><label class="check"><input type="checkbox" name="folder"> Klasörde dosya değişikliği iste</label><button id="voiceMeeting" type="button" class="secondary" aria-pressed="false">Toplantı başlat</button><span class="voice-shortcut">Ctrl + Shift + Space</span></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="folderDialog"><form method="dialog"><h2>Klasör izni</h2><p id="folderAgent"></p><p id="folderRequest"></p><p id="folderHint" aria-live="polite"></p><div class="actions folder-actions"><button class="secondary" value="cancel">Vazgeç</button><button class="secondary" value="once">Bu göreve izin ver</button><button class="primary" value="session">Bu klasöre tüm onayı ver</button></div></form></dialog>
+<script src="agent-office.js"></script></body></html>

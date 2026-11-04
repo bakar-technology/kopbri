@@ -1,0 +1,10 @@
+node_modules/
+.kopbri/
+release/
+dist/
+.env
+.env.*
+*.log
+*.exe
+*.onnx
+*.bin

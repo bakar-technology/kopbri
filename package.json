@@ -1,0 +1,114 @@
+{
+  "name": "kopbri",
+  "productName": "kopbri",
+  "version": "1.3.16",
+  "description": "Token-conscious AI integration platform for Claude, Codex and Gemini",
+  "author": "Mustafa Bakar (bakar.technology)",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "web": "node server.js",
+    "icon": "electron build/render-icon.js",
+    "build": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "technology.bakar.kopbri",
+    "productName": "kopbri",
+    "artifactName": "kopbri-setup-${version}-${arch}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server.js",
+      "public/**/*",
+      "build/icon.png",
+      "package.json",
+      "token-policy.js",
+      "gemini-auth.cjs",
+      "speech-transcribe.cjs",
+      "push-to-talk.cjs",
+      "speech-playback.cjs",
+      "desktop-spotlight.cjs",
+      "folder-access.cjs",
+      "provider-tools.cjs",
+      "setup-window.cjs",
+      "setup-preload.cjs",
+      "live-dictation.cjs",
+      "natural-voice.cjs",
+      "supertonic-helper.mjs",
+      "github-workspaces.cjs",
+      "turkish-dictation.cjs",
+      "cloudflare-connection.cjs",
+      "turkish-dictation-worker.cjs",
+      "!node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
+      "!node_modules/onnxruntime-node/bin/napi-v6/linux/**",
+      "!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**",
+      "provider-quota.cjs",
+      "mail-connection.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": ".kopbri/speech",
+        "to": "speech",
+        "filter": [
+          "**/*",
+          "!piper/**"
+        ]
+      },
+      {
+        "to": "node-runtime",
+        "from": ".kopbri/node-runtime"
+      },
+      {
+        "to": "github",
+        "from": ".kopbri/github-runtime"
+      }
+    ],
+    "win": {
+      "icon": "build/kopbri-install.ico",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "runAfterFinish": true,
+      "shortcutName": "kopbri",
+      "include": "build/installer.nsh",
+      "multiLanguageInstaller": true,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "installerLanguages": [
+        "tr_TR",
+        "en_US"
+      ],
+      "allowElevation": false,
+      "displayLanguageSelector": true,
+      "oneClick": false,
+      "installerIcon": "build/kopbri-install.ico",
+      "installerHeader": "build/installer-header.bmp",
+      "installerSidebar": "build/installer-sidebar.bmp",
+      "uninstallerIcon": "build/kopbri-install.ico",
+      "differentialPackage": false
+    },
+    "npmRebuild": false,
+    "asarUnpack": [
+      "node_modules/onnxruntime-node/**/*",
+      "node_modules/sherpa-onnx-node/**/*",
+      "node_modules/sherpa-onnx-win-x64/**/*",
+      "turkish-dictation-worker.cjs"
+    ]
+  },
+  "dependencies": {
+    "imapflow": "1.7.8",
+    "koffi": "^2.15.1",
+    "nodemailer": "9.1.1",
+    "onnxruntime-node": "^1.22.0",
+    "sherpa-onnx-node": "^2.0.1"
+  }
+}
