@@ -62,7 +62,10 @@ function execute(entry,args,opts={},sync=false) {
     env.PATH = runtime.directory+path.delimiter+(env.PATH || '');
     delete env.ELECTRON_RUN_AS_NODE;
   } else if (js && process.versions.electron) env.ELECTRON_RUN_AS_NODE = '1';
-  return (sync?require('node:child_process').spawnSync:spawn)(executable,js?[entry,...args]:args,{...opts,env});
+  const options = {...opts,env};
+  // Outside Windows, start async children as their own process group so killTree can stop the CLI and everything it spawned.
+  if (!sync && process.platform!=='win32' && options.detached===undefined) options.detached = true;
+  return (sync?require('node:child_process').spawnSync:spawn)(executable,js?[entry,...args]:args,options);
 }
 async function install(update) {
   const runtime = nodeRuntime();

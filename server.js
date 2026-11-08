@@ -350,9 +350,36 @@ function lines(stream, onJson) {
     }
   });
 }
+const KILL_GRACE_MS = 3000;
 function killTree(child) {
-  if (!child.pid || child.exitCode !== null) return;
-  spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true });
+  if (!child) return;
+  // Free the slot right away so the next request is not blocked, even if the CLI is slow to exit.
+  running.delete(child);
+  if (!child.pid || child.exitCode !== null || child.signalCode !== null) return;
+  const pid = child.pid;
+  if (process.platform === 'win32') {
+    const r = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true, encoding: 'utf8' });
+    if (r.error || r.status !== 0) {
+      console.warn(`killTree: taskkill failed for PID ${pid}: ${r.error ? r.error.message : (r.stderr || r.stdout || '').trim() || 'exit ' + r.status}`);
+      try { child.kill(); } catch (e) { console.warn(`killTree: kill failed for PID ${pid}: ${e.message}`); }
+    }
+    return;
+  }
+  // Children are spawned detached (own process group) outside Windows, so signal the whole group.
+  const signal = sig => {
+    try { process.kill(-pid, sig); return; } catch (e) {
+      if (e.code !== 'ESRCH') console.warn(`killTree: ${sig} to process group ${pid} failed (${e.code || e.message}); signalling the process only.`);
+    }
+    if (child.exitCode !== null || child.signalCode !== null) return;
+    try { if (!child.kill(sig)) console.warn(`killTree: ${sig} to PID ${pid} was not delivered.`); }
+    catch (e) { console.warn(`killTree: ${sig} to PID ${pid} failed: ${e.message}`); }
+  };
+  signal('SIGTERM');
+  // Escalate if anything in the group is still alive after a grace period.
+  setTimeout(() => {
+    try { process.kill(-pid, 0); } catch { if (child.exitCode !== null || child.signalCode !== null) return; }
+    signal('SIGKILL');
+  }, KILL_GRACE_MS).unref();
 }
 
 // ---------- http ----------
@@ -479,6 +506,8 @@ async function chat(req, res) {
   child.on('close', () => {if(finalUsage)recordTurnUsage(body.engine,currentSession,finalUsage,turnCwd);});
   child.on('close', () => logTurn({ engine: body.engine, model, title: body.title, files: body.files, tokens, error: failed },turnCwd));
   running.add(child);
+  // 'exit' fires even if a leftover grandchild keeps the pipes (and so 'close') open.
+  child.on('exit', () => running.delete(child));
   child.on('close', () => running.delete(child));
   let stderr = '';
   child.stderr.setEncoding('utf8');
